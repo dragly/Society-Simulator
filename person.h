@@ -1,6 +1,9 @@
 #ifndef PERSON_H
 #define PERSON_H
 
+#include "building.h"
+#include "math.h"
+
 class Person
 {
 public:
@@ -12,10 +15,13 @@ private:
     double cash;
 
     //pos
-    int x;
-    int y;
+    //int x;
+    //int y;
 
-    //Building* currentBuilding;
+    Building* currentBuilding;
+    Building* workPlace;
+    Building* localStore; //For now, only use one store
+    Building* home;
 
     //action
     enum PersonEvent {
@@ -29,6 +35,9 @@ private:
     double end; //time of completion
     PersonEvent personEvent;
     void processEvent();
+
+    getMoveTime(Building* from, Building* to);
+    getMoveTime(Building* target);
 
 };
 
