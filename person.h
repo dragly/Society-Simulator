@@ -3,8 +3,9 @@
 
 #include "building.h"
 #include "math.h"
+#include "entity.h"
 
-class Person
+class Person : Entity
 {
 public:
     Person();
@@ -33,11 +34,11 @@ private:
     };
     double duration;
     double end; //time of completion
+    double currentTime;
     PersonEvent personEvent;
-    void processEvent();
 
-    getMoveTime(Building* from, Building* to);
-    getMoveTime(Building* target);
+    double getMoveTime(Building* from, Building* to);
+    double getMoveTime(Building* target);
 
 };
 

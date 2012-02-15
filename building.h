@@ -1,7 +1,9 @@
 #ifndef BUILDING_H
 #define BUILDING_H
 
-class Building
+#include "entity.h"
+
+class Building : Entity
 {
 public:
     Building();

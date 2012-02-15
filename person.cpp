@@ -54,7 +54,7 @@ void Person::processEvent() {
 
     //Critical Levels
     if (satiety < minSatiety) {
-        if (currentBuilding->buildingType() == Building.Store) {
+        if (currentBuilding->buildingType() == Building::Store) {
             duration = (minSatiety - satiety + 2)/24;
             personEvent = Shop;
             end += duration;
@@ -67,7 +67,7 @@ void Person::processEvent() {
         return;
     } else if (health < minHealth) {
 
-        if (currentBuilding->buildingType() == Building.Home) {
+        if (currentBuilding->buildingType() == Building::Home) {
             duration = (minHealth - health + 2)/2;
             personEvent = Rest;
             end += duration;
@@ -87,7 +87,7 @@ void Person::processEvent() {
     double timeToWork = 8 - tod;
 
     if (timeToWork < 0) { //the workday has already started
-        if (currentBuilding->buildingType() == Building.WorkPlace) {
+        if (currentBuilding->buildingType() == Building::WorkPlace) {
             duration = (minHealth - health + 2)/2;
             personEvent = Work;
             end += duration;
