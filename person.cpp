@@ -1,13 +1,17 @@
 #include "person.h"
 
-Person::Person() : Entity(), health(0),satiety(0),cash(0),end(0)
+Person::Person() : Entity() {
+
+}
+
+PersonStats::PersonStats() : _health(0),_satiety(0),_cash(0),_evStart(0), _duration (0), _evEnd(0), _personEvent(None)
 {
 }
 
 double Person::getMoveTime(Building* target) {
     static const double speed = 10;
-    double xMov = target->x() - currentBuilding->x();
-    double yMov = target->y() - currentBuilding->y();
+    double xMov = target->x() - pS.currentBuilding()->x();
+    double yMov = target->y() - pS.currentBuilding()->y();
     double distance = sqrt(xMov*xMov + yMov*yMov);
     return distance/speed;
 }
@@ -22,21 +26,7 @@ double Person::getMoveTime(Building* from, Building* to) {
 
 void Person::processEvent() {
 
-    //Complete current event
-    if (personEvent == Move || personEvent == Work) {
-        health -= duration;
-        satiety -= duration;
-    } else if (personEvent == Rest){
-        health += 2 * duration; //sleep about 8/24ths of a day. Factor may improve with better houses
-        satiety -= duration/2;
-    } else if (personEvent == Shop) {
-        satiety += duration*24; //Currently eating/feeding
-        health -= duration;
-    }
-    if (health > 24)
-        health = 24;
-    if (satiety > 16)
-        satiety = 16;
+    pS.finishEvent();
 
     //if (health < 0 || satiety < 0)
     //   die();
@@ -53,10 +43,10 @@ void Person::processEvent() {
     //    minSatiety = workToHome+6+homeToStore;
 
     //Critical Levels
-    if (satiety < minSatiety) {
-        if (currentBuilding->buildingType() == Building::Store) {
-            duration = (minSatiety - satiety + 2)/24;
-            personEvent = Shop;
+    if (pS.satiety() < minSatiety) {
+        if (pS.currentBuilding()->buildingType() == Building::Store) {
+            pS.duration = (minSatiety - satiety + 2)/24;
+            pS.personEvent() = Shop;
             end += duration;
         } else {
             duration = getMoveTime(localStore);
@@ -106,4 +96,26 @@ void Person::processEvent() {
     //else rest or get smth to eat.. what ever we lack the most / slightly depending on where we are :O)
 
 
+}
+
+void PersonStats::finishEvent () {
+
+    if (personEvent() == None)
+        return;
+
+    //Complete current event
+    if (personEvent() == Move || personEvent() == Work) {
+        _health -= duration;
+        _satiety -= duration;
+    } else if (personEvent() == Rest){
+        _health += 2 * duration; //sleep about 8/24ths of a day. Factor may improve with better houses
+        _satiety -= duration/2;
+    } else if (personEvent() == Shop) {
+        _satiety += duration*24; //Currently eating/feeding
+        _health -= duration;
+    }
+    if (_health > 24)
+        _health = 24;
+    if (_satiety > 16)
+        _satiety = 16;
 }
