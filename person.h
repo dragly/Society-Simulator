@@ -5,10 +5,11 @@
 #include "math.h"
 #include "entity.h"
 
-class Person : Entity
+class Person : public Entity
 {
 public:
     Person();
+    void processEvent();
 private:
     //stats
     double health; //rest

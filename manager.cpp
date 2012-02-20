@@ -15,6 +15,6 @@ void Manager::setupTestData()
 {
     Person *person = new Person();
     entities.push_front(person);
-    SimulatorEvent* event = new SimulatorEvent();
-
+    SimulatorEvent* event = new SimulatorEvent(person, 99);
+    events.push_back(event);
 }

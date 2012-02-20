@@ -1,6 +1,6 @@
 #include "person.h"
 
-Person::Person() : health(0),satiety(0),cash(0),end(0)
+Person::Person() : Entity(), health(0),satiety(0),cash(0),end(0)
 {
 }
 
