@@ -1,17 +1,24 @@
 #include "person.h"
 
-Person::Person() : Entity() {
+Person::Person() :
+    Entity(),
+    health(0),
+    satiety(0),
+    cash(0)
+{
 
 }
 
-PersonStats::PersonStats() : _health(0),_satiety(0),_cash(0),_evStart(0), _duration (0), _evEnd(0), _personEvent(None)
+PersonEvent::PersonEvent()  :
+    personEventType(None)
 {
+
 }
 
 double Person::getMoveTime(Building* target) {
     static const double speed = 10;
-    double xMov = target->x() - pS.currentBuilding()->x();
-    double yMov = target->y() - pS.currentBuilding()->y();
+    double xMov = target->x() - currentAction.getCurrentBuilding()->x();
+    double yMov = target->y() - currentAction.getCurrentBuilding()->y();
     double distance = sqrt(xMov*xMov + yMov*yMov);
     return distance/speed;
 }
@@ -24,9 +31,9 @@ double Person::getMoveTime(Building* from, Building* to) {
     return distance/speed;
 }
 
-void Person::processEvent() {
+void Person::processCurrentEvent() {
 
-    pS.finishEvent();
+    finishCurrentAction();
 
     //if (health < 0 || satiety < 0)
     //   die();
@@ -42,30 +49,33 @@ void Person::processEvent() {
     //if (minSatiety < workToHome+6+homeToStore) //impossible event
     //    minSatiety = workToHome+6+homeToStore;
 
+    double currentTime = 0; //TODO: pass when calling or make a global
+    double end = currentTime;
+
     //Critical Levels
-    if (pS.satiety() < minSatiety) {
-        if (pS.currentBuilding()->buildingType() == Building::Store) {
-            pS.duration = (minSatiety - satiety + 2)/24;
-            pS.personEvent() = Shop;
-            end += duration;
+    if (getSatiety() < minSatiety) {
+        if (currentAction.getCurrentBuilding()->buildingType() == Building::Store) {
+            currentAction.duration = (2.0f + minSatiety - getSatiety())/24.0;
+            currentAction.personEventType = PersonEvent::Shop;
+            end += currentAction.getDuration();
         } else {
-            duration = getMoveTime(localStore);
-            currentBuilding = localStore;
-            personEvent = Move;
-            end += duration;
+            currentAction.duration = getMoveTime(localStore);
+            currentAction.currentBuilding = localStore;
+            currentAction.personEventType = PersonEvent::Move;
+            end += currentAction.getDuration();
         }
         return;
     } else if (health < minHealth) {
 
-        if (currentBuilding->buildingType() == Building::Home) {
-            duration = (minHealth - health + 2)/2;
-            personEvent = Rest;
-            end += duration;
+        if (currentAction.currentBuilding->buildingType() == Building::Home) {
+            currentAction.duration = (minHealth - getHealth() + 2)/2;
+            currentAction.personEventType = PersonEvent::Rest;
+            end += currentAction.duration;
         } else {
-            duration = getMoveTime(home);
-            currentBuilding = home;
-            personEvent = Move;
-            end += duration;
+            currentAction.duration = getMoveTime(home);
+            currentAction.currentBuilding = home;
+            currentAction.personEventType = PersonEvent::Move;
+            end += currentAction.duration;
         }
         return;
     }
@@ -77,16 +87,16 @@ void Person::processEvent() {
     double timeToWork = 8 - tod;
 
     if (timeToWork < 0) { //the workday has already started
-        if (currentBuilding->buildingType() == Building::WorkPlace) {
-            duration = (minHealth - health + 2)/2;
-            personEvent = Work;
-            end += duration;
+        if (currentAction.currentBuilding->buildingType() == Building::WorkPlace) {
+            currentAction.duration = (minHealth - getHealth() + 2)/2;
+            currentAction.personEventType = PersonEvent::Work;
+            end += currentAction.duration;
         } else {
-            duration = getMoveTime(workPlace);
-            if (timeToWork*-1 + duration < 8.0) {
-                currentBuilding = workPlace;
-                personEvent = Move;
-                end += duration;
+            currentAction.duration = getMoveTime(workPlace);
+            if (timeToWork*-1 + currentAction.duration < 8.0) {
+                currentAction.currentBuilding = workPlace;
+                currentAction.personEventType = PersonEvent::Move;
+                end += currentAction.duration;
                 return;
             } else { //we won't make it before the day is over anyway, do smth else
 
@@ -98,24 +108,26 @@ void Person::processEvent() {
 
 }
 
-void PersonStats::finishEvent () {
+void Person::finishCurrentAction() {
 
-    if (personEvent() == None)
+    if (currentAction.getPersonEventType() == PersonEvent::None)
         return;
 
+    float duration = currentAction.getDuration();
+
     //Complete current event
-    if (personEvent() == Move || personEvent() == Work) {
-        _health -= duration;
-        _satiety -= duration;
-    } else if (personEvent() == Rest){
-        _health += 2 * duration; //sleep about 8/24ths of a day. Factor may improve with better houses
-        _satiety -= duration/2;
-    } else if (personEvent() == Shop) {
-        _satiety += duration*24; //Currently eating/feeding
-        _health -= duration;
+    if (currentAction.getPersonEventType() == PersonEvent::Move || currentAction.getPersonEventType() == PersonEvent::Work) {
+        health -= duration;
+        satiety -= duration;
+    } else if (currentAction.getPersonEventType() == PersonEvent::Rest){
+        health += 2 * duration; //sleep about 8/24ths of a day. Factor may improve with better houses
+        satiety -= duration/2;
+    } else if (currentAction.getPersonEventType() == PersonEvent::Shop) {
+        satiety += duration*24; //Currently eating/feeding
+        health -= duration;
     }
-    if (_health > 24)
-        _health = 24;
-    if (_satiety > 16)
-        _satiety = 16;
+    if (health > 24)
+        health = 24;
+    if (satiety > 16)
+        satiety = 16;
 }

@@ -9,7 +9,7 @@ Entity::Entity()
 
 void Entity::processNextEvent()
 {
-    if(events.size() < 1) {
+    if(events.empty()) {
         std::cerr << "No events left!";
         return;
     }

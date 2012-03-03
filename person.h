@@ -6,45 +6,38 @@
 #include "entity.h"
 
 //action
-enum PersonEvent {
-    None,
-    Move,
-    Work,
-    Rest,
-    Shop
-    //etc
-};
 
-class PersonStats {
+
+class PersonEvent {
+    friend class Person;
 public:
-    PersonStats();
-    void finishEvent();
-    void createEvent();
+    enum PersonEventType {
+        None,
+        Move,
+        Work,
+        Rest,
+        Shop
+        //etc
+    };
 
-    double health() { return _health; }
-    double satiety() { return _satiety; }
-    double cash() { return _cash; }
+    PersonEvent();
 
-    PersonEvent personEvent() { return _personEvent; }
-    double duration() { return _duration; }
-    double evEnd() { return _evEnd; }
-    double evStart() { return _evStart; }
-    Building* currentBuilding() { return _currentBuilding; }
-    Building* destination() { return _destination; }
+    double getDuration() { return duration; }
+    double evEnd() { return evStart + duration; }
+    double getEvStart() { return evStart; }
 
+    PersonEventType getPersonEventType() { return personEventType; }
+    Building* getCurrentBuilding() { return currentBuilding; }
+    Building* getDestination() { return destination; }
 
 private:
-    double _health; //rest
-    double _satiety; //hunger/food
-    double _cash;
+    PersonEventType personEventType;
+    double duration;
+    //double _evEnd;
+    double evStart;
 
-    PersonEvent _personEvent;
-    double _duration;
-    double _evEnd;
-    double _evStart;
-
-    Building* _currentBuilding;
-    Building* _destination;
+    Building* currentBuilding;
+    Building* destination; //only used for move-events
 };
 
 
@@ -52,31 +45,32 @@ class Person : public Entity
 {
 public:
     Person();
-    void processEvent();
+    void processCurrentEvent();
+
+    double getHealth() { return health; }
+    double getSatiety() { return satiety; }
+    double getCash() { return cash; }
+
+    void finishCurrentAction();
+    void createEvent();
+
+    static double getMoveTime(Building* from, Building* to);
+    double getMoveTime(Building* target);
 private:
 
-    PersonStats pS;
+    //stats
+    double health; //rest
+    double satiety; //hunger/food
+    double cash;
 
+    //temp
     Building* workPlace;
     Building* localStore; //For now, only use one store
     Building* home;
 
     //action
-    enum PersonEvent {
-        Move,
-        Work,
-        Rest,
-        Shop
-        //etc
-    };
-    double duration;
-    double end; //time of completion
-    double currentTime;
-    PersonEvent personEvent;
-
-    double  getMoveTime(Building* from, Building* to);
-    double getMoveTime(Building* target);
-
+    PersonEvent currentAction;
+    std::list<PersonEvent*> pendingActions;
 };
 
 #endif // PERSON_H
